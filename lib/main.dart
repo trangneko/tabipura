@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tabipura/pages/chat_screen.dart';
-// import 'package:tabipura/pages/home_page.dart';
+import 'package:tabipura/pages/home_page.dart';
 
+import 'bloc/city_bloc.dart';
+import 'bloc/travel_plan_bloc.dart';
+import 'pages/result_page.dart';
 import 'theme/theme.dart';
 import 'theme/util.dart';
 
@@ -23,10 +27,22 @@ class MyApp extends StatelessWidget {
 
     MaterialTheme theme = MaterialTheme(textTheme);
 
-    return MaterialApp(
-      theme: brightness == Brightness.light ? theme.light() : theme.dark(),
-      home: const ChatScreen(
-        title: "Flutter + AI",
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => CityBloc()..add(LoadSuggestedCities())),
+        BlocProvider(create: (_) => TravelPlanBloc()),
+      ],
+      child: MaterialApp(
+        theme: brightness == Brightness.light ? theme.light() : theme.dark(),
+        // home: const ChatScreen(
+        //   title: "Flutter + AI",
+        // ),
+        title: 'AI Travel Planner',
+        initialRoute: '/',
+        routes: {
+          '/': (context) => HomeScreen(),
+          '/result': (context) => ResultScreen(),
+        },
       ),
     );
   }
