@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/settings_bloc.dart';
+import '../bloc/travel_plan_bloc.dart';
+import '../bloc/travel_plan_event.dart';
+import '../models/city.dart';
 import '../models/settings.dart';
 
 class SettingsModal extends StatefulWidget {
-  const SettingsModal({super.key});
+    final City city;
+
+  const SettingsModal({super.key, required this.city});
 
   @override
   State<SettingsModal> createState() => _SettingsModalState();
@@ -12,10 +16,12 @@ class SettingsModal extends StatefulWidget {
 
 class _SettingsModalState extends State<SettingsModal> {
   final _formKey = GlobalKey<FormState>();
-  String _travelType = 'Leisure';
-  DateTime _travelTime = DateTime.now();
-  double _maxCost = 1000.0;
+  String _travelType = 'Friends';
+  DateTime _dateStart = DateTime(2024, 7, 15);
+  DateTime _dateEnd = DateTime(2024, 7, 16);
+  String _budgetType = 'Low';
   String _travelStyle = 'Relaxed';
+  String _interest = 'Nature';
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +39,7 @@ class _SettingsModalState extends State<SettingsModal> {
                   _travelType = value!;
                 });
               },
-              items: ['Leisure', 'Business'].map((type) {
+              items: ['Friends', 'Couple', 'Solo', 'Business'].map((type) {
                 return DropdownMenuItem(
                   value: type,
                   child: Text(type),
@@ -41,13 +47,20 @@ class _SettingsModalState extends State<SettingsModal> {
               }).toList(),
               decoration: InputDecoration(labelText: 'Travel Type'),
             ),
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Max Cost'),
-              keyboardType: TextInputType.number,
-              initialValue: _maxCost.toString(),
+            DropdownButtonFormField<String>(
+              value: _budgetType,
               onChanged: (value) {
-                _maxCost = double.parse(value);
+                setState(() {
+                  _budgetType = value!;
+                });
               },
+              items: ['Low', 'Medium', 'High'].map((type) {
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(type),
+                );
+              }).toList(),
+              decoration: InputDecoration(labelText: 'Budget Type'),
             ),
             DropdownButtonFormField<String>(
               value: _travelStyle,
@@ -56,7 +69,7 @@ class _SettingsModalState extends State<SettingsModal> {
                   _travelStyle = value!;
                 });
               },
-              items: ['Relaxed', 'Adventurous'].map((style) {
+              items: ['Relaxed', 'Normal', 'Adventurous', 'Packed'].map((style) {
                 return DropdownMenuItem(
                   value: style,
                   child: Text(style),
@@ -64,18 +77,39 @@ class _SettingsModalState extends State<SettingsModal> {
               }).toList(),
               decoration: InputDecoration(labelText: 'Travel Style'),
             ),
+            DropdownButtonFormField<String>(
+              value: _interest,
+              onChanged: (value) {
+                setState(() {
+                  _interest = value!;
+                });
+              },
+              items: ['Nature', 'Museums', 'Constructs', 'Art'].map((style) {
+                return DropdownMenuItem(
+                  value: style,
+                  child: Text(style),
+                );
+              }).toList(),
+              decoration: InputDecoration(labelText: 'Interests'),
+            ),
             ElevatedButton(
               onPressed: () {
                 final settings = TravelSettings(
+                  dateStart: _dateStart,
+                  dateEnd: _dateEnd,
                   travelType: _travelType,
-                  travelTime: _travelTime,
-                  maxCost: _maxCost,
-                  travelStyle: _travelStyle,
+                  budgetType: _budgetType,
+                  travelStyle: _travelStyle, 
+                  interest: _interest
                 );
-                context.read<SettingsBloc>().add(UpdateSettings(settings));
-                Navigator.pop(context);
+              context.read<TravelPlanBloc>().add(
+                    GenerateTravelPlan(widget.city, settings),
+                  );
+
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/result');
               },
-              child: Text('Save Settings'),
+              child: Text('Generate Travel Plan'),
             ),
           ],
         ),

@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tabipura/pages/chat_screen.dart';
 import 'package:tabipura/pages/home_page.dart';
 
 import 'bloc/city_bloc.dart';
 import 'bloc/travel_plan_bloc.dart';
 import 'pages/result_page.dart';
+import 'services/api_service.dart';
 import 'theme/theme.dart';
 import 'theme/util.dart';
 
-void main() => runApp(const MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+ MyApp({super.key});
+  final ApiService apiService = ApiService('http://localhost:3000');
 
   @override
   Widget build(BuildContext context) {
@@ -30,18 +31,17 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => CityBloc()..add(LoadSuggestedCities())),
-        BlocProvider(create: (_) => TravelPlanBloc()),
+        BlocProvider<TravelPlanBloc>(
+          create: (context) => TravelPlanBloc(apiService),
+        ),
       ],
       child: MaterialApp(
         theme: brightness == Brightness.light ? theme.light() : theme.dark(),
-        // home: const ChatScreen(
-        //   title: "Flutter + AI",
-        // ),
         title: 'AI Travel Planner',
         initialRoute: '/',
         routes: {
           '/': (context) => HomeScreen(),
-          '/result': (context) => ResultScreen(),
+          '/result': (context) => SelectionArea(child: ResultScreen()),
         },
       ),
     );

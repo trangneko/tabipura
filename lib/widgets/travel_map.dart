@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:tabipura/models/travel_plan.dart';
 
 class TravelMap extends StatefulWidget {
-  const TravelMap({super.key});
+  final List<Activity> activities; // Pass activities
+
+  const TravelMap({super.key, required this.activities});
 
   @override
   State<TravelMap> createState() => _TravelMapState();
@@ -11,7 +14,6 @@ class TravelMap extends StatefulWidget {
 
 class _TravelMapState extends State<TravelMap> {
   late GoogleMapController mapController;
-  final gyoEn = LatLng(35.68541074171516, 139.7100546033002);
   LatLng? currentPosition;
 
   @override
@@ -66,6 +68,47 @@ class _TravelMapState extends State<TravelMap> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    _updateCameraPosition();
+  }
+
+  void _updateCameraPosition() {
+    List<LatLng> positions = widget.activities
+        .where((activity) => activity.coordinates != null)
+        .map((activity) => activity.coordinates!)
+        .toList();
+
+    if (positions.isEmpty && currentPosition == null) {
+      return;
+    }
+
+    if (currentPosition != null) {
+      positions.add(currentPosition!);
+    }
+
+    LatLngBounds bounds = _createBounds(positions);
+
+    CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 50);
+    mapController.animateCamera(cameraUpdate);
+  }
+
+  LatLngBounds _createBounds(List<LatLng> positions) {
+    assert(positions.isNotEmpty);
+    double south = positions.first.latitude;
+    double north = positions.first.latitude;
+    double west = positions.first.longitude;
+    double east = positions.first.longitude;
+
+    for (LatLng position in positions) {
+      if (position.latitude < south) south = position.latitude;
+      if (position.latitude > north) north = position.latitude;
+      if (position.longitude < west) west = position.longitude;
+      if (position.longitude > east) east = position.longitude;
+    }
+
+    return LatLngBounds(
+      southwest: LatLng(south, west),
+      northeast: LatLng(north, east),
+    );
   }
 
   @override
@@ -76,26 +119,30 @@ class _TravelMapState extends State<TravelMap> {
 
   @override
   Widget build(BuildContext context) {
+    Set<Marker> markers = widget.activities
+        .where((activity) => activity.coordinates != null)
+        .map((activity) => Marker(
+              markerId: MarkerId(activity.place),
+              position: activity.coordinates!,
+              infoWindow: InfoWindow(
+                title: activity.place,
+                snippet: activity.description,
+              ),
+              icon: BitmapDescriptor.defaultMarker,
+              
+            ))
+        .toSet();
+
     return GoogleMap(
-      initialCameraPosition: const CameraPosition(
-        target: LatLng(35.6895, 139.6917), // Example coordinates (Tokyo)
-        zoom: 14,
+      initialCameraPosition: CameraPosition(
+        target: (currentPosition != null)
+            ? currentPosition!
+            : const LatLng(35.6895, 139.6917), // Example coordinates (Shinjuku)
+        zoom: 13,
       ),
       mapType: MapType.normal,
       onMapCreated: _onMapCreated,
-      markers: {
-        Marker(
-            markerId: MarkerId("sourceLocation"),
-            icon: BitmapDescriptor.defaultMarker,
-            position: gyoEn),
-        if (currentPosition != null)
-          Marker(
-            markerId: MarkerId("currentLocation"),
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueAzure),
-            position: currentPosition!,
-          ),
-      },
+      markers: markers,
     );
   }
 }
