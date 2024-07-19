@@ -1,16 +1,13 @@
-# tabipura
+# Tabipura たびぷら
 
-A new Flutter project.
+![image](https://github.com/user-attachments/assets/b001344d-7f58-43b0-998d-54511a346232)
 
-## Getting Started
+Tabipura is an AI-powered travel planning application designed to make your travel experience effortless and enjoyable. 
+Simply input your preferences and conditions, and Tabipura will automatically generate a customized itinerary for you. 
+Save time, reduce stress, and enjoy a tailored travel experience with recommendations for flights, accommodations, activities, and budget management.
 
-This project is a starting point for a Flutter application.
+## Techniques I used
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- API: Gemini, Google Maps, Geolocation
+- Backend: Node.js, Firebase
+- Frontend: Flutter
